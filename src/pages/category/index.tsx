@@ -40,8 +40,8 @@ export default function Category({ initialCategories }: CategoryPageProps) {
       const apiClient = setupApiClient();
       await apiClient.delete(`/category/${id}`);
 
-      // Remover categoria da lista
-      setCategories(categories.filter((category) => category.id !== id));
+      // Invalidar cache para atualizar a lista
+      invalidateCategories();
 
       toast.success("Categoria excluída com sucesso!");
     } catch (error) {

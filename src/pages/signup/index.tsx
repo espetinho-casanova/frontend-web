@@ -28,7 +28,7 @@ export default function SignUp() {
 
     try {
       // Validar dados com Zod
-      const { createUserSchema } = await import("../validations/userValidations");
+      const { createUserSchema } = await import("../../validations/userValidations");
       const validatedData = createUserSchema.parse({ name, login, password });
 
       await signUp(validatedData);

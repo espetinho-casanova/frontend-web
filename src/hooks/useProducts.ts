@@ -23,7 +23,7 @@ export function useProductsByCategory(categoryId: number | string | null) {
     queryKey: ["products", categoryId],
     queryFn: async () => {
       if (!categoryId) return [];
-      
+
       const apiClient = setupApiClient();
       const response = await apiClient.get("/category/product", {
         params: { categoryId },
@@ -32,7 +32,7 @@ export function useProductsByCategory(categoryId: number | string | null) {
     },
     enabled: !!categoryId,
     staleTime: 2 * 60 * 1000, // 2 minutos
-    cacheTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
   });
 }
 
@@ -41,37 +41,37 @@ export function useAllProducts() {
     queryKey: ["products", "all"],
     queryFn: async () => {
       const apiClient = setupApiClient();
-      
+
       // Buscar todas as categorias primeiro
       const categoriesResponse = await apiClient.get("/categories");
       const categories = categoriesResponse.data;
-      
+
       // Buscar produtos de todas as categorias
       const allProducts: Product[] = [];
-      
+
       for (const category of categories) {
         const response = await apiClient.get("/category/product", {
           params: { categoryId: category.id },
         });
-        
+
         const productsWithCategory = response.data.map((product: Product) => ({
           ...product,
           category: category,
         }));
-        
+
         allProducts.push(...productsWithCategory);
       }
-      
+
       return allProducts;
     },
     staleTime: 2 * 60 * 1000, // 2 minutos
-    cacheTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
   });
 }
 
 export function useInvalidateProducts() {
   const queryClient = useQueryClient();
-  
+
   return () => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
   };

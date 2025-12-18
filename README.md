@@ -186,20 +186,26 @@ npm run test:coverage
 
 ## 🚀 Deploy
 
-### Build de Produção
+### Deploy no Vercel
+
+Para instruções detalhadas de deploy, consulte o [guia completo de deploy](./DEPLOY.md).
+
+**Resumo rápido:**
+
+1. Conecte o repositório no [Vercel](https://vercel.com)
+2. Configure as variáveis de ambiente:
+   - `NEXT_PUBLIC_API_URL` - URL da API em produção
+   - `NEXT_PUBLIC_COOKIE_NAME` - Nome do cookie (padrão: `@es-casanova.token`)
+   - `NEXT_PUBLIC_COOKIE_MAX_AGE` - Tempo de expiração (padrão: `2592000`)
+3. (Opcional) Configure a branch `develop` como produção em **Settings** → **Git** → **Production Branch**
+4. Faça o deploy
+
+### Build Local de Produção
 
 ```bash
 npm run build
 npm start
 ```
-
-### Variáveis de Ambiente em Produção
-
-Certifique-se de configurar as variáveis de ambiente no ambiente de produção:
-
-- `NEXT_PUBLIC_API_URL` - URL da API em produção
-- `NEXT_PUBLIC_COOKIE_NAME` - Nome do cookie (pode manter o padrão)
-- `NEXT_PUBLIC_COOKIE_MAX_AGE` - Tempo de expiração do cookie
 
 ## 📝 Notas Importantes
 

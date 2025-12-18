@@ -87,7 +87,7 @@ export function ModalCreateOrder({
     }
   }, []);
 
-  const fetchProductsByCategory = async (categoryId: string) => {
+  const fetchProductsByCategory = async (categoryId: string | number) => {
     setLoading(true);
     const apiClient = setupApiClient();
 

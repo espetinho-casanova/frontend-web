@@ -20,13 +20,13 @@ export function useIngredients() {
       return response.data as Ingredient[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
-    cacheTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
   });
 }
 
 export function useInvalidateIngredients() {
   const queryClient = useQueryClient();
-  
+
   return () => {
     queryClient.invalidateQueries({ queryKey: ["ingredients"] });
   };

@@ -19,13 +19,13 @@ export function useAddons() {
       return response.data as Addon[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
-    cacheTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
   });
 }
 
 export function useInvalidateAddons() {
   const queryClient = useQueryClient();
-  
+
   return () => {
     queryClient.invalidateQueries({ queryKey: ["addons"] });
   };

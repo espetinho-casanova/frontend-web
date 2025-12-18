@@ -44,6 +44,7 @@ export type OrderItem = {
   draft: boolean;
   name: string | null;
   userId?: string;
+  userName?: string | null;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   details: OrderDetailProps;
@@ -61,22 +62,22 @@ export type ItemProps = {
   id: string;
   amount: number;
   orderId: string;
-  productId: string;
+  productId: number;
   removals?: string[]; // Ingredientes removidos
   notes?: string; // Observações
   meatPoint?: string; // Ponto da carne
   takenToTable?: boolean; // Se o item já foi levado para a mesa
   product: {
-    id: string;
+    id: number;
     name: string;
     price: string | number;
     description: string;
     banner: string;
     available: boolean;
-    categoryId: string;
+    categoryId: number;
   };
   meatChoice?: {
-    id: string;
+    id: number;
     name: string;
     price: string | number;
     banner: string;
@@ -84,7 +85,7 @@ export type ItemProps = {
   additions?: Array<{
     id: string;
     addon: {
-      id: string;
+      id: number;
       name: string;
       price: string | number;
       image?: string | null;
@@ -147,7 +148,18 @@ export default function Dashboard({ orders }: OrdersProps) {
 
     if (existingOrder && existingOrder.details) {
       // Usar dados já carregados (evita requisição desnecessária)
-      setOrderItemDetails(existingOrder.details);
+      setOrderItemDetails({
+        order: {
+          id: existingOrder.id,
+          table: existingOrder.table,
+          status: existingOrder.status,
+          draft: existingOrder.draft,
+          name: existingOrder.name,
+          userId: existingOrder.userId,
+          userName: existingOrder.userName || null,
+        },
+        orderItems: existingOrder.details.orderItems,
+      });
       setModalVisible(true);
     } else {
       // Se não estiver carregado, buscar do servidor
@@ -581,10 +593,23 @@ export default function Dashboard({ orders }: OrdersProps) {
       const itemTotal = (basePrice + additionsTotal) * item.amount;
 
       return {
-        product: item.product,
+        product: {
+          ...item.product,
+          ingredients: (item.product as any).ingredients || [],
+          addons: (item.product as any).allowedAddons || [],
+        },
         amount: item.amount,
         total: itemTotal,
-        meatChoice: item.meatChoice || undefined,
+        meatChoice: item.meatChoice
+          ? {
+              ...item.meatChoice,
+              description: "",
+              categoryId: item.product.categoryId,
+              ingredients: [],
+              addons: [],
+              available: true,
+            }
+          : undefined,
         removals: item.removals || [],
         additions: additionsArray.map((add) => ({
           id: add.id,
@@ -626,7 +651,7 @@ export default function Dashboard({ orders }: OrdersProps) {
     }
   }
 
-  async function fetchProductsByCategory(categoryId: number) {
+  async function fetchProductsByCategory(categoryId: string | number) {
     try {
       const apiClient = setupApiClient();
       const response = await apiClient.get("/category/product", {

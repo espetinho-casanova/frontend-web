@@ -137,7 +137,7 @@ export default function PDV({ categories, initialProducts }: PDVProps) {
     }
   }, [selectedSubcategory]);
 
-  async function fetchProductsByCategory(categoryId: string) {
+  async function fetchProductsByCategory(categoryId: string | number) {
     setLoading(true);
     const apiClient = setupApiClient();
 
@@ -426,7 +426,7 @@ export default function PDV({ categories, initialProducts }: PDVProps) {
                     </div>
                     <div className={styles.productInfo}>
                       <h3>{product.name}</h3>
-                      <span className={styles.productPrice}>R$ {Number.parseFloat(product.price).toFixed(2)}</span>
+                      <span className={styles.productPrice}>R$ {Number.parseFloat(String(product.price)).toFixed(2)}</span>
                     </div>
                   </button>
                 );

@@ -21,7 +21,7 @@ export type Product = {
 };
 
 export type Category = {
-  id: string;
+  id: number;
   categoryName: string;
   children?: Category[]; // Subcategorias
 };
@@ -45,12 +45,12 @@ export type OrderPayload = {
 };
 
 export type OrderItem = {
-  productId: string;
+  productId: number;
   amount: number;
-  meatChoiceId?: string;
+  meatChoiceId?: number;
   meatPoint?: string; // Ponto da carne
   removals: string[]; // Array de Strings (Nomes)
-  additions: string[]; // Array de Strings (IDs dos Addons)
+  additions: number[]; // Array de Numbers (IDs dos Addons)
   notes: string;
 };
 

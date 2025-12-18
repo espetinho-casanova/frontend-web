@@ -11,29 +11,33 @@ import { FiPlus, FiEdit2, FiImage, FiCoffee } from "react-icons/fi";
 import { getImageUrl } from "../../utils/imageUrl";
 import { AuthContext } from "../../contexts/AuthContext";
 
-type Category = {
-  id: string;
+export type Category = {
+  id: number;
   categoryName: string;
   children?: Category[]; // Subcategorias
 };
 
 type Product = {
-  id: string;
+  id: number;
   name: string;
   price: string;
   description: string;
   banner: string;
-  categoryId: string;
+  categoryId: number;
   available: boolean;
   stock?: number; // Estoque do produto
-  ingredients?: Array<{ id: string; name: string }>;
-  addons?: Array<{ id: string; name: string; price: string }>;
+  ingredients?: Array<{ id: number; name: string }>;
+  addons?: Array<{ id: number; name: string; price: string }>;
   category?: Category;
   canBeUsedInSandwich?: boolean; // Se o espetinho pode ser usado no lanche (Xis/Ká)
   hasMeatPoint?: boolean; // Se o produto tem ponto da carne (espetinhos de carne)
 };
 
 interface ProductPageProps {
+  readonly categoryList: Category[];
+}
+
+export interface CategoryProps {
   readonly categoryList: Category[];
 }
 
@@ -284,15 +288,13 @@ export default function ProductPage({ categoryList }: ProductPageProps) {
                   </button>
                 ))}
               </div>
-              
+
               {/* Mobile: Select dropdown */}
               <div className={styles.subcategorySelect}>
                 <select
                   value={selectedSubcategory?.id || ""}
                   onChange={(e) => {
-                    const subcategory = selectedCategory.children?.find(
-                      (sub) => String(sub.id) === e.target.value
-                    );
+                    const subcategory = selectedCategory.children?.find((sub) => String(sub.id) === e.target.value);
                     setSelectedSubcategory(subcategory || null);
                   }}
                   className={styles.select}

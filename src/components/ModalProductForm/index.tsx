@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { getImageUrl } from "../../utils/imageUrl";
 
 type Category = {
-  id: string;
+  id: number;
   categoryName: string;
   children?: Category[]; // Subcategorias
 };
@@ -24,14 +24,14 @@ type Addon = {
 };
 
 type Product = {
-  id?: string;
+  id?: number;
   name: string;
   price: string;
   description: string;
   banner: string;
-  categoryId: string;
-  ingredients?: Array<{ id: string; name: string }>;
-  addons?: Array<{ id: string; name: string; price: string }>;
+  categoryId: number;
+  ingredients?: Array<{ id: number; name: string }>;
+  addons?: Array<{ id: number; name: string; price: string }>;
   canBeUsedInSandwich?: boolean; // Se o espetinho pode ser usado no lanche (Xis/Ká)
   hasMeatPoint?: boolean; // Se o produto tem ponto da carne (espetinhos de carne)
 };
@@ -91,7 +91,7 @@ export function ModalProductForm({
       setName(product.name || "");
       setPrice(product.price || "");
       setDescription(product.description || "");
-      setCategoryId(product.categoryId || "");
+      setCategoryId(product.categoryId ? String(product.categoryId) : "");
       setAvatarUrl(product.banner ? getImageUrl(product.banner) : "");
       setCanBeUsedInSandwich((product as any).canBeUsedInSandwich !== undefined ? (product as any).canBeUsedInSandwich : true);
       setHasMeatPoint((product as any).hasMeatPoint !== undefined ? (product as any).hasMeatPoint : false);

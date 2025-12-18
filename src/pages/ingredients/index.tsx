@@ -41,8 +41,8 @@ export default function Ingredients({ initialIngredients }: IngredientsProps) {
       const apiClient = setupApiClient();
       await apiClient.delete(`/ingredient/${id}`);
 
-      // Remover ingrediente da lista
-      setIngredients(ingredients.filter((ingredient) => ingredient.id !== id));
+      // Invalidar cache para atualizar a lista
+      invalidateIngredients();
 
       toast.success("Ingrediente excluído com sucesso!");
     } catch (error) {
