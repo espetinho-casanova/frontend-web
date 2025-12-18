@@ -1,0 +1,139 @@
+.container {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+.containerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 {
+    color: var(--white);
+    margin: 1rem 0;
+  }
+}
+
+.customLink {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.4s;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
+.input {
+  width: 45%;
+  border-radius: 0.3rem;
+  margin-bottom: 1rem;
+  color: var(--white);
+  background-color: var(--dark-900);
+  border: 1px solid var(--gray-100);
+  height: 40px;
+  padding: 0 0.5rem;
+
+  &:not(:first-child) {
+    margin-left: 10%;
+  }
+}
+
+.productsContainer {
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  max-height: 350px;
+  &::-webkit-scrollbar {
+    width: 5px;
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  &:hover {
+    /* Define a cor de fundo do polegar */
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+.productList {
+  border: 1px solid var(--gray-100);
+  background: var(--dark-900);
+  color: var(--white);
+  border-radius: 0.3rem;
+  margin-bottom: 1rem;
+
+  // overflow-y: auto; ideias para o futuro...
+  // max-height: 150px;
+}
+
+.clientTitle {
+  display: flex;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.productItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--gray-100);
+  padding: 0.5rem;
+  // background-color: var(--dark-900);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:first-child {
+    border-top: none;
+  }
+}
+
+.quantity {
+  font-weight: bold;
+}
+
+.name {
+  font-weight: bold;
+}
+
+.itemButtons {
+  display: flex;
+
+  button {
+    background: transparent;
+    border: none;
+    margin-right: 1rem;
+
+    transition: transform 0.4s;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+}
+
+.buttonAdd {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+
+  button {
+    padding: 0 1rem;
+    height: 40px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    width: 100%;
+    max-width: none;
+  }
+}

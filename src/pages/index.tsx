@@ -6,7 +6,7 @@ import styles from "../../styles/home.module.scss";
 import logoImg from "../../public/logo-white.svg";
 
 import { Input } from "../components/ui/Input";
-import { Button } from "../components/ui/Button";
+import { CustomButton } from "../components/ui/customButton";
 
 import { AuthContext } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
@@ -26,23 +26,25 @@ export default function Home() {
   async function handleLogin(event: FormEvent) {
     event.preventDefault();
 
-    // Verificar se o login e a senha foram fornecidos
-    if (login === "" || password === "") {
-      // Exibir mensagem de erro ao usuário
-      toast.warn("Por favor, forneca seu login e senha!");
-      return;
-    }
-
     setLoading(true);
 
-    let data = {
-      login,
-      password,
-    };
+    try {
+      // Validar dados com Zod
+      const { authUserSchema } = await import("../validations/userValidations");
+      const validatedData = authUserSchema.parse({ login, password });
 
-    await signIn(data);
-
-    setLoading(false);
+      await signIn(validatedData);
+    } catch (error: any) {
+      if (error.errors) {
+        // Erros de validação do Zod
+        const firstError = error.errors[0];
+        toast.warn(firstError.message);
+      } else {
+        toast.warn("Por favor, forneça seu login e senha!");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -68,14 +70,10 @@ export default function Home() {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            <Button type="submit" loading={loading}>
+            <CustomButton color="error" variant="contained" type="submit" loading={loading}>
               Acessar
-            </Button>
+            </CustomButton>
           </form>
-
-          <Link legacyBehavior href="/signup">
-            <a className={styles.text}>Cadastre-se</a>
-          </Link>
         </div>
 
         <Image className="logo" src={logoImg} alt="Logo Espetinho Casanova" />

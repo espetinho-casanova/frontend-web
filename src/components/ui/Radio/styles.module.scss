@@ -1,0 +1,15 @@
+.radio-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: none;
+  padding: 0.5rem;
+}
+
+.radio-container input[type="radio"] {
+  margin-bottom: 1px;
+}
+
+.radio-container label {
+  margin-top: 4px;
+}

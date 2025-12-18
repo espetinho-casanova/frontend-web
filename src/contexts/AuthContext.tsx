@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useState, useEffect } from "react";
 
 import { api } from "../services/apiClient";
+import { env } from "../config/env";
 
 import { setCookie, parseCookies, destroyCookie } from "nookies";
 import Router from "next/router";
@@ -13,12 +14,32 @@ type AuthContextData = {
   signIn: (credentials: SingInProps) => Promise<void>;
   signOut: () => void;
   signUp: (credentials: SignUpProps) => Promise<void>;
+  hasPermission: (permissionName: string) => boolean;
+  canManageResource: (resource: string) => boolean;
+};
+
+type Permission = {
+  id: string;
+  name: string;
+  resource: string;
+  action: string;
+  description?: string;
+};
+
+type Role = {
+  id: string;
+  name: string;
+  description?: string;
+  permissions: Array<{
+    permission: Permission;
+  }>;
 };
 
 type UserProps = {
   id: string;
   name: string;
   login: string;
+  role?: Role | null;
 };
 
 type SingInProps = {
@@ -40,10 +61,10 @@ export const AuthContext = createContext({} as AuthContextData);
 
 export function signOut() {
   try {
-    destroyCookie(undefined, "@es-casanova.token");
+    destroyCookie(undefined, env.NEXT_PUBLIC_COOKIE_NAME);
     Router.push("/");
   } catch {
-    console.log("Erro ao deslogar!");
+    // Erro silencioso ao deslogar - não crítico
   }
 }
 
@@ -53,18 +74,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     //tentar pegar o token no cookie
-    const { "@es-casanova.token": token } = parseCookies();
+    const cookies = parseCookies();
+    const token = cookies[env.NEXT_PUBLIC_COOKIE_NAME];
 
     if (token) {
       api
         .get("/userinfo")
         .then((response) => {
-          const { id, name, login } = response.data;
+          const { id, name, login, role } = response.data;
 
           setUser({
             id,
             name,
             login,
+            role: role || null,
           });
         })
         .catch(() => {
@@ -83,20 +106,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const { id, name, token } = response.data;
 
-      setCookie(undefined, "@es-casanova.token", token, {
-        maxAge: 60 * 60 * 24 * 30, // expira em um mês
+      setCookie(undefined, env.NEXT_PUBLIC_COOKIE_NAME, token, {
+        maxAge: env.NEXT_PUBLIC_COOKIE_MAX_AGE,
         path: "/", //quais caminhos terao acesso ao cookie ( todos )
       });
 
-      setUser({
-        id,
-        name,
-        login,
-      });
-
       //passar para proximas requisições o token
-
       api.defaults.headers["Authorization"] = `Bearer ${token}`;
+
+      // Buscar informações completas do usuário incluindo role e permissões
+      const userInfoResponse = await api.get("/userinfo");
+      const { id: userId, name: userName, login: userLogin, role } = userInfoResponse.data;
+
+      setUser({
+        id: userId,
+        name: userName,
+        login: userLogin,
+        role: role || null,
+      });
 
       toast.success("Logado com sucesso!");
 
@@ -104,7 +131,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       Router.push("/dashboard");
     } catch (err) {
       toast.error("Erro ao acessar!");
-      console.log("Erro ao acessar ", err);
     }
   }
 
@@ -120,16 +146,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       Router.push("/");
     } catch (err) {
-      const { error } = err.response.data;
+      const { error } = err.response?.data || { error: "Erro ao cadastrar" };
       toast.error(error);
-
-      console.log("Erro ao cadastrar: ", err);
     }
+  }
+
+  function hasPermission(permissionName: string): boolean {
+    if (!user?.role) return false;
+    return user.role.permissions.some(
+      (rp) => rp.permission.name === permissionName
+    );
+  }
+
+  /**
+   * Verifica se o usuário pode gerenciar um recurso (criar, editar ou deletar)
+   * Usado para determinar se deve mostrar links de gerenciamento no menu
+   */
+  function canManageResource(resource: string): boolean {
+    if (!user?.role) return false;
+    return user.role.permissions.some(
+      (rp) =>
+        rp.permission.resource === resource &&
+        (rp.permission.action === "create" ||
+          rp.permission.action === "edit" ||
+          rp.permission.action === "delete")
+    );
   }
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, signIn, signOut, signUp }}
+      value={{ user, isAuthenticated, signIn, signOut, signUp, hasPermission, canManageResource }}
     >
       {children}
     </AuthContext.Provider>

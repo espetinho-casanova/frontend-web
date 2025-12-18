@@ -6,7 +6,7 @@ import styles from "../../../styles/home.module.scss";
 import logoImg from "../../../public/logo-white.svg";
 
 import { Input } from "../../components/ui/Input";
-import { Button } from "../../components/ui/Button";
+import { CustomButton } from "../../components/ui/customButton";
 
 import { AuthContext } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
@@ -24,24 +24,25 @@ export default function SignUp() {
   async function handleSignUp(event: FormEvent) {
     event.preventDefault();
 
-    // Verificar se o nome, login e senha foram fornecidos
-    if (name === "" || login === "" || password === "") {
-      // Exibir mensagem de erro ao usuário
-      toast.warn("Por favor, preencha todos os campos!");
-      return;
-    }
-
     setLoading(true);
 
-    let data = {
-      name,
-      login,
-      password,
-    };
+    try {
+      // Validar dados com Zod
+      const { createUserSchema } = await import("../validations/userValidations");
+      const validatedData = createUserSchema.parse({ name, login, password });
 
-    await signUp(data);
-
-    setLoading(false);
+      await signUp(validatedData);
+    } catch (error: any) {
+      if (error.errors) {
+        // Erros de validação do Zod
+        const firstError = error.errors[0];
+        toast.warn(firstError.message);
+      } else {
+        toast.warn("Por favor, preencha todos os campos corretamente!");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -54,30 +55,15 @@ export default function SignUp() {
           <h1>Criando sua conta</h1>
 
           <form onSubmit={handleSignUp}>
-            <Input
-              placeholder="Digite o nome"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <Input placeholder="Digite o nome" type="text" value={name} onChange={(e) => setName(e.target.value)} />
 
-            <Input
-              placeholder="Digite o login"
-              type="text"
-              value={login}
-              onChange={(e) => setLogin(e.target.value)}
-            />
+            <Input placeholder="Digite o login" type="text" value={login} onChange={(e) => setLogin(e.target.value)} />
 
-            <Input
-              placeholder="Digite a senha"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <Input placeholder="Digite a senha" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
-            <Button type="submit" loading={loading}>
+            <CustomButton type="submit" loading={loading}>
               Cadastrar
-            </Button>
+            </CustomButton>
           </form>
 
           <Link legacyBehavior href="/">

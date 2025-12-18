@@ -1,64 +1,168 @@
-import { useState, FormEvent } from "react";
+import { useState } from "react";
 import Head from "next/head";
 import { Header } from "../../components/Header";
 import styles from "./styles.module.scss";
-
 import { setupApiClient } from "../../services/api";
 import { toast } from "react-toastify";
+import { canSSRWithPermission } from "../../utils/canSSRWithPermission";
+import { FiTrash2, FiTag, FiPlus, FiEdit2 } from "react-icons/fi";
+import { ModalCategoryForm } from "../../components/ModalCategoryForm";
+import Modal from "react-modal";
+import { useCategories, useInvalidateCategories } from "../../hooks/useCategories";
 
-import { canSSRAuth } from "../../utils/canSSRAuth";
+type Category = {
+  id: string;
+  categoryName: string;
+};
 
-export default function Category() {
-  const [name, setName] = useState("");
+interface CategoryPageProps {
+  readonly initialCategories: Category[];
+}
 
-  async function handleRegister(event: FormEvent) {
-    event.preventDefault();
+export default function Category({ initialCategories }: CategoryPageProps) {
+  const { data: categories = initialCategories || [], isLoading } = useCategories();
+  const invalidateCategories = useInvalidateCategories();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-    if (name === "") {
-      return;
+  Modal.setAppElement("#__next");
+
+  async function handleRefreshCategories() {
+    invalidateCategories();
+  }
+
+  async function handleDelete(id: string) {
+    const confirmDelete = globalThis.confirm("Deseja realmente excluir esta categoria?");
+
+    if (!confirmDelete) return;
+
+    try {
+      const apiClient = setupApiClient();
+      await apiClient.delete(`/category/${id}`);
+
+      // Remover categoria da lista
+      setCategories(categories.filter((category) => category.id !== id));
+
+      toast.success("Categoria excluída com sucesso!");
+    } catch (error) {
+      console.error("Erro ao excluir categoria:", error);
+      toast.error("Erro ao excluir categoria! Pode haver produtos vinculados.");
     }
-
-    const apiClient = setupApiClient();
-    await apiClient.post("/category", {
-      name: name,
-    });
-
-    toast.success("Categoria Cadastrada com sucesso!");
-    setName("");
   }
 
   return (
     <>
       <Head>
-        <title>Nova Categoria - Espetinho Casanova</title>
+        <title>Categorias - Espetinho Casanova</title>
       </Head>
 
-      <div>
+      <div className={styles.page}>
         <Header />
         <main className={styles.container}>
-          <h1>Cadastrar Categorias</h1>
+          <div className={styles.header}>
+            <div className={styles.titleRow}>
+              <h1>Categorias</h1>
+              <span className={styles.count}>
+                {categories.length} {categories.length === 1 ? "categoria" : "categorias"}
+              </span>
+              <button
+                type="button"
+                className={styles.buttonAdd}
+                onClick={() => {
+                  setEditingCategory(null);
+                  setModalOpen(true);
+                }}
+              >
+                <FiPlus size={20} />
+                <span>Nova Categoria</span>
+              </button>
+            </div>
+            <p className={styles.subtitle}>Organize seu cardápio em categorias</p>
+          </div>
 
-          <form className={styles.form} onSubmit={handleRegister}>
-            <input
-              type="text"
-              placeholder="Digite o nome da ctegoria"
-              className={styles.input}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+          {/* Lista de categorias */}
+          {categories.length === 0 ? (
+            <div className={styles.emptyState}>
+              <FiTag size={48} color="var(--gray-100)" />
+              <h3>Nenhuma categoria cadastrada</h3>
+              <p>Adicione a primeira categoria para começar a organizar seu cardápio</p>
+            </div>
+          ) : (
+            <div className={styles.list}>
+              {categories.map((category) => (
+                <div key={category.id} className={styles.categoryCard}>
+                  <div className={styles.categoryInfo}>
+                    <div className={styles.categoryIcon}>
+                      <FiTag size={24} />
+                    </div>
+                    <div className={styles.categoryDetails}>
+                      <h3>{category.categoryName}</h3>
+                    </div>
+                  </div>
+                  <div className={styles.cardActions}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCategory(category);
+                        setModalOpen(true);
+                      }}
+                      className={styles.editButton}
+                      title="Editar categoria"
+                    >
+                      <FiEdit2 size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(category.id)}
+                      className={styles.deleteButton}
+                      title="Excluir categoria"
+                    >
+                      <FiTrash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
-            <button className={styles.buttonAdd} type="submit">
-              Cadastrar
-            </button>
-          </form>
+          {/* Modal de Cadastro/Edição */}
+          <ModalCategoryForm
+            isOpen={modalOpen}
+            onRequestClose={() => {
+              setModalOpen(false);
+              setEditingCategory(null);
+            }}
+            onSuccess={handleRefreshCategories}
+            category={editingCategory}
+          />
         </main>
       </div>
     </>
   );
 }
 
-export const getServerSideProps = canSSRAuth(async (context) => {
-  return {
-    props: {},
-  };
-});
+export const getServerSideProps = canSSRWithPermission(
+  async (context) => {
+    try {
+      const apiClient = setupApiClient(context);
+      const response = await apiClient.get("/categories");
+
+      return {
+        props: {
+          initialCategories: response.data,
+        },
+      };
+    } catch (error) {
+      console.error("Erro ao buscar categorias:", error);
+      return {
+        props: {
+          initialCategories: [],
+        },
+      };
+    }
+  },
+  {
+    requiredManageResource: "category",
+    redirectTo: "/dashboard",
+  }
+);

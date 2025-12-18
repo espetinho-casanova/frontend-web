@@ -6,7 +6,6 @@ import {
 import { parseCookies, destroyCookie } from "nookies";
 import { AuthTokenError } from "../services/errors/AuthTokenError";
 
-//funcao para paginas que só users logados podem ter acesso
 export function canSSRAuth<P>(fn: GetServerSideProps<P>) {
   return async (
     context: GetServerSidePropsContext
@@ -36,6 +35,7 @@ export function canSSRAuth<P>(fn: GetServerSideProps<P>) {
           },
         };
       }
+      throw err;
     }
   };
 }
